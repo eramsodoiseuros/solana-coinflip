@@ -12,6 +12,8 @@ The `flip` method simulates the flipping of a coin by generating a random number
 
 The `withdraw` method allows the player to withdraw their bet amount if they lost the coin flip. It checks that the player is the owner of the contract's `Account` object and that the result of the coin flip is not `None`, indicating that the flip has been performed. If these conditions are met, it adds the bet amount to the player's `balance`.
 
+# testing
+
 The code also has a test block that shows an example of how to use the `CoinFlip` contract. It creates a player `PublicKey` and an `Account` object with an initial balance of 100,000 lamports, and then creates an instance of the CoinFlip contract using the `Account` object.
 
 Next, it uses the `place_bet` method to place a bet of 1,000 lamports, checks that the bet_amount attribute has been updated correctly, and then uses the flip method to perform the coin flip and check that the result attribute has been set.
