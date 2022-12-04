@@ -10,31 +10,33 @@ class CoinFlip(Program):
     # initialize the contract with the player's account and the contract owner's public key
     def __init__(self, a: Account, contract_owner: PublicKey):
         self.account = a
-        self.player = a.owner
+        self.player = a.public_key
         self.contract_owner = contract_owner
         self.balance = 0
         self.bet_amount = 0
         self.result = None
 
     # method to place a bet on the coin flip
-    def place_bet(self, amount: int):
-        assert self.account.lamports >= amount, 'You must bet more than 0 Lamports.'
-        assert self.account.owner == self.player, 'Only the player can place a bet.'
+    def place_bet(self, account: Account, amount: int):
+        assert account.lamports >= amount, 'You must bet more than 0 Lamports.'
+        assert account.owner == self.player, 'Only the player can place a bet.'
         self.bet_amount = amount
 
     # method to flip the coin and determine the result
-    def flip(self):
-        assert self.account.owner == self.player, 'Only the player can flip the coin.'
+    def flip(self, account: Account):
+        assert account.owner == self.player, 'Only the player can flip the coin.'
         hasher = hashlib.sha256()
         hasher.update(str(random.getrandbits(256)).encode('utf-8'))
         self.result = int(hasher.hexdigest(), 16) % 2 == 0
+        if not self.result:
+             self.player.transfer(self.contract_owner, amount)
 
     # method to withdraw the bet amount if the player wins
-    def withdraw(self):
-        assert self.account.owner == self.player, 'Only the player can withdraw the bet amount.'
+    def withdraw(self, account: Account):
+        assert account.owner == self.player, 'Only the player can withdraw the bet amount.'
         assert self.result, 'You can only withdraw the bet amount if you won.'
         self.balance = self.bet_amount * 2
-        self.account.transfer(self.player, self.balance)
+        account.transfer(self.player, self.balance)
 
 
 # test the contract
@@ -49,9 +51,9 @@ if __name__ == '__main__':
     assert contract.bet_amount == 1000
 
     # flip the coin and determine the result
-    contract.flip()
+    contract.flip(account)
     assert contract.result is not None
 
     # withdraw the bet amount if the player wins
-    contract.withdraw()
+    contract.withdraw(account)
     assert contract.account.lamports == 99
